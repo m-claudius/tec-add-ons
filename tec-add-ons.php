@@ -1,13 +1,18 @@
 <?php
 /**
  * Plugin Name: TEC add ons
+ * Plugin URI:  https://github.com/m-claudius/tec-add-ons
  * Description: Zusätze für The Events Calendar: Filterleiste, „Hervorgehobene Veranstaltung“ zuerst, Newsletter (Cron/Test/Logs), Community-Events (Frontend-Einreichung, Moderation, Nutzer ↔ Quelle).
  * Version: 1.6.3
- * Author: TEC add ons (Matthias Clausen/ChatGPT)
+ * Author: Matthias Clausen
+ * Author URI: https://github.com/m-claudius
  * Requires at least: 6.1
+ * Tested up to: 6.8
  * Requires PHP: 7.4
  * License: GPLv2 or later
+ * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: tec-add-ons
+ * Update URI: false
  */
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
