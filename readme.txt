@@ -1,0 +1,1 @@
+See plugin header and admin pages for usage.
