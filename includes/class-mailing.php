@@ -114,11 +114,15 @@ class Mailing {
     /* ================= DB-Setup ================= */
     public static function maybe_install_tables(): void {
         global $wpdb;
-        require_once ABSPATH.'wp-admin/includes/upgrade.php';
-        $charset = $wpdb->get_charset_collate();
-
         $log_table  = $wpdb->prefix.'tec_addons_mail_log';
         $sent_table = $wpdb->prefix.'tec_addons_mail_sent';
+
+        $log_exists  = $wpdb->get_var( $wpdb->prepare("SHOW TABLES LIKE %s", $log_table) )  === $log_table;
+        $sent_exists = $wpdb->get_var( $wpdb->prepare("SHOW TABLES LIKE %s", $sent_table) ) === $sent_table;
+        if ( $log_exists && $sent_exists ) return;
+
+        require_once ABSPATH.'wp-admin/includes/upgrade.php';
+        $charset = $wpdb->get_charset_collate();
 
         $sql1 = "CREATE TABLE {$log_table} (
             id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
