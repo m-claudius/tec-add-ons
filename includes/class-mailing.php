@@ -3,17 +3,20 @@ namespace TEC_Addons;
 
 if ( ! defined('ABSPATH') ) { exit; }
 
-// Doppeldefinition vermeiden
-if (class_exists(__NAMESPACE__.'\\Mailing', false)) { return; }
-
-require_once __DIR__ . '/mailing/class-schedule.php';
-require_once __DIR__ . '/mailing/class-sources.php';
-require_once __DIR__ . '/mailing/class-renderer.php';
-require_once __DIR__ . '/mailing/class-sender.php';
-
 use TEC_Addons\Mailing\Schedule;
 use TEC_Addons\Mailing\Renderer;
 use TEC_Addons\Mailing\Sender;
+
+// Doppeldefinition vermeiden
+if (class_exists(__NAMESPACE__.'\\Mailing', false)) { return; }
+
+// Helper sind in tec-add-ons.php geladen; defensive Sicherung:
+if ( ! class_exists('TEC_Addons\\Mailing\\Schedule', false) ) {
+    require_once __DIR__ . '/mailing/class-schedule.php';
+    require_once __DIR__ . '/mailing/class-sources.php';
+    require_once __DIR__ . '/mailing/class-renderer.php';
+    require_once __DIR__ . '/mailing/class-sender.php';
+}
 
 /**
  * Mailing — Fassade.

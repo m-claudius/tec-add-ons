@@ -20,6 +20,12 @@ define( 'TEC_ADDONS_VERSION', '1.6.3' );
 define( 'TEC_ADDONS_DIR', plugin_dir_path( __FILE__ ) );
 define( 'TEC_ADDONS_URL', plugin_dir_url( __FILE__ ) );
 
+// Mailing helpers (must load BEFORE class-mailing.php facade)
+require_once TEC_ADDONS_DIR . 'includes/mailing/class-schedule.php';
+require_once TEC_ADDONS_DIR . 'includes/mailing/class-sources.php';
+require_once TEC_ADDONS_DIR . 'includes/mailing/class-renderer.php';
+require_once TEC_ADDONS_DIR . 'includes/mailing/class-sender.php';
+
 require_once TEC_ADDONS_DIR . 'includes/class-admin.php';
 require_once TEC_ADDONS_DIR . 'includes/class-featured-first.php';
 require_once TEC_ADDONS_DIR . 'includes/class-filter-bar.php';
