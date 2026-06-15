@@ -45,11 +45,17 @@ class Schedule {
         return $ref->getTimestamp();
     }
 
-    // Mail-Zeiträume (bestehendes Verhalten)
+    // Anker = heute wenn Samstag, sonst nächster Samstag (nicht-strikt).
+    // So decken Test- und Live-Versand am Versand-Samstag denselben Zeitraum ab.
+    protected static function this_or_next_saturday(?\DateTimeImmutable $ref = null): \DateTimeImmutable {
+        $cand = ($ref ?: self::now())->setTime(0,0,0);
+        while ((int)$cand->format('N') !== 6) { $cand = $cand->modify('+1 day'); }
+        return $cand;
+    }
+
     public static function window_weekly_live(?\DateTimeImmutable $ref = null): array {
-        $anchor = self::next_saturday_1am($ref);
-        $start  = $anchor->setTime(0,0,0);
-        $end    = $start->modify('+9 days')->setTime(23,59,59);
+        $start = self::this_or_next_saturday($ref);
+        $end   = $start->modify('+9 days')->setTime(23,59,59);
         return [ self::fmt($start), self::fmt($end) ];
     }
     public static function window_monthly_live(?\DateTimeImmutable $ref = null): array {
@@ -58,8 +64,8 @@ class Schedule {
         $end    = $start->modify('+42 days')->setTime(23,59,59);
         return [ self::fmt($start), self::fmt($end) ];
     }
-    public static function window_weekly_test(): array  { return self::window_weekly_live( self::next_saturday_1am() ); }
-    public static function window_monthly_test(): array { return self::window_monthly_live( self::last_saturday_of_month_1am() ); }
+    public static function window_weekly_test(): array  { return self::window_weekly_live(); }
+    public static function window_monthly_test(): array { return self::window_monthly_live(); }
 
     /* ================= Locking & Run-Key (Duplikatschutz) ================= */
     public static function acquire_lock(string $key, int $ttl = 7200): bool {
