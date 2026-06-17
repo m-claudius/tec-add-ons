@@ -122,7 +122,19 @@ class Sender {
         $log_table  = $wpdb->prefix.'tec_addons_mail_log';
 
         $lock_key = ($type === 'weekly') ? 'weekly' : 'monthly';
-        if ( ! Schedule::acquire_lock($lock_key, 7200) ) { return; } // 2h Lock
+
+        // Manuelle Auslösung (Button) übersteuert eine evtl. hängende Sperre:
+        // ein Mensch hat explizit „Senden" geklickt; der run_key-Dedupe verhindert
+        // weiterhin echte Doppelversände. Nur der Cron behält den Überlapp-Schutz.
+        $is_manual = (strpos($trigger, 'manual') === 0);
+        if ($is_manual) { Schedule::release_lock($lock_key); }
+
+        if ( ! Schedule::acquire_lock($lock_key, 7200) ) {
+            // Nicht lautlos abbrechen – Hinweis hinterlassen.
+            update_option('tec_addons_last_mail_error',
+                sprintf('run(%s,%s): übersprungen, Sperre „%s" aktiv.', $type, $trigger, $lock_key));
+            return;
+        }
 
         try {
             // Basis-Schlüssel nach Rhythmus
