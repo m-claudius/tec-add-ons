@@ -26,6 +26,12 @@ require_once TEC_ADDONS_DIR . 'includes/mailing/class-sources.php';
 require_once TEC_ADDONS_DIR . 'includes/mailing/class-renderer.php';
 require_once TEC_ADDONS_DIR . 'includes/mailing/class-sender.php';
 
+// Community helpers (must load BEFORE class-community.php facade)
+require_once TEC_ADDONS_DIR . 'includes/community/class-sources.php';
+require_once TEC_ADDONS_DIR . 'includes/community/class-mapping.php';
+require_once TEC_ADDONS_DIR . 'includes/community/class-mailer.php';
+require_once TEC_ADDONS_DIR . 'includes/community/class-form.php';
+
 require_once TEC_ADDONS_DIR . 'includes/class-admin.php';
 require_once TEC_ADDONS_DIR . 'includes/class-featured-first.php';
 require_once TEC_ADDONS_DIR . 'includes/class-filter-bar.php';
