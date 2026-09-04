@@ -35,5 +35,17 @@ check('Spanne mit Betrag',     Cost_Display::reads_as_free('Kostenlos – 20,00 
 check('Text ohne Zahl',        Cost_Display::reads_as_free('Eintritt frei', 'Kostenlos'), false);
 check('Spende',                Cost_Display::reads_as_free('Spende erbeten', 'Kostenlos'), false);
 
+/* ---------- Rohwert aus _EventCost: die eigentliche Entscheidungsgrundlage ---------- */
+check('Rohwert 0',            Cost_Display::meta_reads_as_free('0'), true);
+check('Rohwert 0,00',         Cost_Display::meta_reads_as_free('0,00'), true);
+check('Rohwert 0.00',         Cost_Display::meta_reads_as_free('0.00'), true);
+check('Rohwert als Zahl',     Cost_Display::meta_reads_as_free(0), true);
+check('Rohwert als Array',    Cost_Display::meta_reads_as_free(['0']), true);
+
+check('Rohwert leer',         Cost_Display::meta_reads_as_free(''), false);
+check('Rohwert 15',           Cost_Display::meta_reads_as_free('15'), false);
+check('Rohwert 12,50',        Cost_Display::meta_reads_as_free('12,50'), false);
+check('Rohwert Text',         Cost_Display::meta_reads_as_free('Eintritt frei'), false);
+
 echo "\n$pass Prüfungen bestanden, $fail fehlgeschlagen\n";
 exit($fail > 0 ? 1 : 0);

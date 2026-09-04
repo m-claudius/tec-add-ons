@@ -308,7 +308,68 @@ class Admin {
 
         submit_button(__('Einstellungen speichern','tec-add-ons'));
         echo '</form>';
+
+        self::render_cost_selftest();
+
         echo '</div>';
+    }
+
+    /**
+     * Zeigt, ob der Preis-Filter tatsächlich hängt und was er aus den
+     * vorhandenen Werten macht. Ohne das bleibt bei „wird trotzdem angezeigt“
+     * nur Raten.
+     */
+    protected static function render_cost_selftest() {
+        global $wpdb;
+
+        echo '<h2>Selbsttest</h2>';
+
+        $hooked = has_filter('tribe_get_cost', ['TEC_Addons\\Cost_Display', 'filter_cost']);
+        $option = get_option('tec_addons_hide_zero_cost', '(nicht gesetzt, Vorgabe: yes)');
+
+        echo '<table class="widefat striped" style="max-width:760px"><tbody>';
+        printf('<tr><td>Option <code>tec_addons_hide_zero_cost</code></td><td><strong>%s</strong></td></tr>', esc_html((string)$option));
+        printf('<tr><td>Filter an <code>tribe_get_cost</code></td><td><strong>%s</strong></td></tr>',
+            $hooked !== false ? 'hängt (Priorität '.(int)$hooked.')' : '<span style="color:#b32d2e">hängt NICHT</span>');
+        printf('<tr><td>Funktion <code>tribe_get_cost()</code></td><td><strong>%s</strong></td></tr>',
+            function_exists('tribe_get_cost') ? 'vorhanden' : '<span style="color:#b32d2e">fehlt – ist The Events Calendar aktiv?</span>');
+        echo '</tbody></table>';
+
+        if ( ! function_exists('tribe_get_cost') ) { return; }
+
+        // Ein paar Veranstaltungen mit gesetztem Preisfeld zeigen
+        $rows = (array) $wpdb->get_results(
+            "SELECT p.ID, p.post_title, m.meta_value AS cost
+               FROM {$wpdb->posts} p
+               INNER JOIN {$wpdb->postmeta} m ON m.post_id = p.ID AND m.meta_key = '_EventCost'
+              WHERE p.post_type = 'tribe_events'
+                AND p.post_status = 'publish'
+                AND m.meta_value <> ''
+              ORDER BY p.ID DESC
+              LIMIT 8"
+        );
+
+        if ( ! $rows ) {
+            echo '<p>Keine Veranstaltung mit gefülltem Preisfeld gefunden – dann kann auch nichts angezeigt werden.</p>';
+            return;
+        }
+
+        echo '<table class="widefat striped" style="max-width:960px"><thead><tr>'
+            . '<th>ID</th><th>Titel</th><th>Rohwert <code>_EventCost</code></th><th>Ausgabe <code>tribe_get_cost()</code></th>'
+            . '</tr></thead><tbody>';
+
+        foreach ($rows as $r) {
+            $out = tribe_get_cost((int)$r->ID, true);
+            printf(
+                '<tr><td>%d</td><td>%s</td><td><code>%s</code></td><td>%s</td></tr>',
+                (int)$r->ID,
+                esc_html(get_the_title($r->ID)),
+                esc_html((string)$r->cost),
+                $out === '' ? '<em>leer – wird nicht angezeigt</em>' : '<strong>'.esc_html((string)$out).'</strong>'
+            );
+        }
+        echo '</tbody></table>';
+        echo '<p class="description">Steht rechts noch „Kostenlos“, obwohl links eine Null steht, greift der Filter nicht – dann bitte melden.</p>';
     }
 
     /* -------------------- ABONNENTEN -------------------- */

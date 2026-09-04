@@ -4,7 +4,7 @@ WordPress-Plugin als Erweiterung für **The Events Calendar (TEC)**.
 
 Bündelt mehrere Zusatzmodule rund um Veranstaltungslisten, Newsletter und Community-Einreichungen.
 
-- **Version:** 1.7.0
+- **Version:** 1.7.1
 - **Autor:** Matthias Clausen (mit ChatGPT)
 - **Lizenz:** GPLv2 or later
 - **Voraussetzungen:** WordPress 6.1+, PHP 7.4+ (laut Header) / PHP 8+ (laut Handbuch), aktives *The Events Calendar*, funktionierender `wp_mail()`-Versand
@@ -34,11 +34,15 @@ Die Null kann von Hand kommen, beim Anlegen über die TEC-ORM entstehen oder von
 Event Tickets stammen, das bei Reservierungen ohne Preis eine 0 hinterlegt.
 
 Der Filter hängt sich in `tribe_get_cost` ein – den letzten Filter vor der
-Ausgabe, den `tribe_get_formatted_cost()` intern mitbenutzt – und liefert eine
-leere Zeichenkette, sobald der Wert auf null hinausläuft. Echte Beträge und
-Spannen bleiben stehen. Verglichen wird gegen `esc_html__( 'Free', 'tribe-common' )`
-statt gegen ein fest verdrahtetes „Kostenlos“, damit eine geänderte Übersetzung
-nichts aushebelt.
+Ausgabe, den `tribe_get_formatted_cost()` intern mitbenutzt. Entschieden wird
+am **Rohwert** aus `_EventCost`: steht dort eine Null, entfällt die Ausgabe,
+unabhängig von Übersetzung, Währungssymbol und Textbaustein. Nur wenn kein
+Rohwert greifbar ist (der Preis also aus einem Ticket kommt), wird ersatzweise
+der Ausgabetext gegen `esc_html__( 'Free', 'tribe-common' )` geprüft. Ein leeres
+Preisfeld sowie echte Beträge und Spannen bleiben unangetastet.
+
+Unter *TEC add ons → Anzeige* zeigt ein Selbsttest, ob der Filter hängt und was
+er aus den vorhandenen Preisfeldern macht.
 
 Abschaltbar unter *TEC add ons → Anzeige*, einzelne Veranstaltungen über den
 Filter `tec_addons_hide_zero_cost`.

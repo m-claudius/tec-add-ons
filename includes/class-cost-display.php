@@ -58,10 +58,37 @@ class Cost_Display {
 
         if ( ! is_string( $cost ) && ! is_numeric( $cost ) ) { return $cost; }
 
-        // Genau der String, den maybe_replace_cost_with_free() erzeugt hätte.
+        // 1) Rohwert entscheidet. Steht im Preisfeld eine Null, ist die Sache klar -
+        //    unabhängig von Übersetzung, Währungssymbol und Textbaustein.
+        if ( $post_id && self::meta_reads_as_free( get_post_meta( (int) $post_id, '_EventCost', true ) ) ) {
+            return '';
+        }
+
+        // 2) Kein Rohwert greifbar (z.B. Preis kommt aus einem Ticket): dann am
+        //    Ausgabetext entscheiden. $free ist genau der String, den
+        //    maybe_replace_cost_with_free() erzeugt hätte.
         $free = esc_html__( 'Free', 'tribe-common' );
 
         return self::reads_as_free( (string) $cost, (string) $free ) ? '' : $cost;
+    }
+
+    /**
+     * Ist der Rohwert aus _EventCost eine Null?
+     *
+     * Ein leeres Feld heißt „kein Preis hinterlegt“ und wird nicht angefasst –
+     * dann darf ein Ticketpreis durchkommen.
+     *
+     * @param mixed $raw
+     */
+    public static function meta_reads_as_free( $raw ) {
+        if ( is_array( $raw ) ) { $raw = reset( $raw ); }
+        $raw = trim( (string) $raw );
+        if ( $raw === '' ) { return false; }
+
+        $raw = str_replace( ',', '.', $raw );
+        if ( ! is_numeric( $raw ) ) { return false; }
+
+        return number_format( (float) $raw, 2, '.', ',' ) === '0.00';
     }
 
     /**
