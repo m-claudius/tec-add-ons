@@ -4,7 +4,7 @@ WordPress-Plugin als Erweiterung für **The Events Calendar (TEC)**.
 
 Bündelt mehrere Zusatzmodule rund um Veranstaltungslisten, Newsletter und Community-Einreichungen.
 
-- **Version:** 1.7.1
+- **Version:** 1.7.2
 - **Autor:** Matthias Clausen (mit ChatGPT)
 - **Lizenz:** GPLv2 or later
 - **Voraussetzungen:** WordPress 6.1+, PHP 7.4+ (laut Header) / PHP 8+ (laut Handbuch), aktives *The Events Calendar*, funktionierender `wp_mail()`-Versand
@@ -41,8 +41,14 @@ Rohwert greifbar ist (der Preis also aus einem Ticket kommt), wird ersatzweise
 der Ausgabetext gegen `esc_html__( 'Free', 'tribe-common' )` geprüft. Ein leeres
 Preisfeld sowie echte Beträge und Spannen bleiben unangetastet.
 
+Ausgewertet werden **alle** `_EventCost`-Zeilen einer Veranstaltung: TEC bildet
+aus mehreren Werten eine Spanne. Stehen dort nur Nullen, entfällt die Ausgabe.
+Steht neben einem echten Betrag zusätzlich eine Null, zeigt TEC „Kostenlos –
+15,00 €“ – dieser Fall gehört bereinigt, nicht versteckt.
+
 Unter *TEC add ons → Anzeige* zeigt ein Selbsttest, ob der Filter hängt und was
-er aus den vorhandenen Preisfeldern macht.
+er aus den vorhandenen Preisfeldern macht; dort lassen sich überzählige Nullen
+auch entfernen.
 
 Abschaltbar unter *TEC add ons → Anzeige*, einzelne Veranstaltungen über den
 Filter `tec_addons_hide_zero_cost`.

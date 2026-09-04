@@ -3,7 +3,7 @@
  * Plugin Name: TEC add ons
  * Plugin URI:  https://github.com/m-claudius/tec-add-ons
  * Description: Zusätze für The Events Calendar: Filterleiste, „Hervorgehobene Veranstaltung“ zuerst, Anzeige der Preisangabe, Newsletter (Cron/Test/Logs), Community-Events (Frontend-Einreichung, Moderation, Nutzer ↔ Quelle).
- * Version: 1.7.1
+ * Version: 1.7.2
  * Author: Matthias Clausen
  * Author URI: https://github.com/m-claudius
  * Requires at least: 6.1
@@ -16,7 +16,7 @@
  */
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-define( 'TEC_ADDONS_VERSION', '1.7.1' );
+define( 'TEC_ADDONS_VERSION', '1.7.2' );
 define( 'TEC_ADDONS_DIR', plugin_dir_path( __FILE__ ) );
 define( 'TEC_ADDONS_URL', plugin_dir_url( __FILE__ ) );
 

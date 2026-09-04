@@ -43,6 +43,13 @@ check('Rohwert als Zahl',     Cost_Display::meta_reads_as_free(0), true);
 check('Rohwert als Array',    Cost_Display::meta_reads_as_free(['0']), true);
 
 check('Rohwert leer',         Cost_Display::meta_reads_as_free(''), false);
+check('nur leere Werte',      Cost_Display::meta_reads_as_free(['', '']), false);
+
+/* Mehrere Meta-Zeilen: TEC bildet daraus eine Spanne */
+check('mehrere Nullen',       Cost_Display::meta_reads_as_free(['0', '0,00']), true);
+check('Null neben Betrag',    Cost_Display::meta_reads_as_free(['15', '0']), false);
+check('Betrag neben Null',    Cost_Display::meta_reads_as_free(['0', '15']), false);
+check('Null neben Text',      Cost_Display::meta_reads_as_free(['0', 'Eintritt frei']), false);
 check('Rohwert 15',           Cost_Display::meta_reads_as_free('15'), false);
 check('Rohwert 12,50',        Cost_Display::meta_reads_as_free('12,50'), false);
 check('Rohwert Text',         Cost_Display::meta_reads_as_free('Eintritt frei'), false);

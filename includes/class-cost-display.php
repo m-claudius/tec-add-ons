@@ -58,9 +58,11 @@ class Cost_Display {
 
         if ( ! is_string( $cost ) && ! is_numeric( $cost ) ) { return $cost; }
 
-        // 1) Rohwert entscheidet. Steht im Preisfeld eine Null, ist die Sache klar -
-        //    unabhängig von Übersetzung, Währungssymbol und Textbaustein.
-        if ( $post_id && self::meta_reads_as_free( get_post_meta( (int) $post_id, '_EventCost', true ) ) ) {
+        // 1) Rohwert entscheidet. Steht im Preisfeld nur eine Null, ist die Sache
+        //    klar - unabhängig von Übersetzung, Währungssymbol und Textbaustein.
+        //    Bewusst alle Meta-Werte: ein Event kann mehrere _EventCost-Zeilen
+        //    haben, TEC bildet daraus eine Spanne.
+        if ( $post_id && self::meta_reads_as_free( get_post_meta( (int) $post_id, '_EventCost', false ) ) ) {
             return '';
         }
 
@@ -73,22 +75,75 @@ class Cost_Display {
     }
 
     /**
-     * Ist der Rohwert aus _EventCost eine Null?
+     * Sind die Rohwerte aus _EventCost ausschließlich Nullen?
      *
      * Ein leeres Feld heißt „kein Preis hinterlegt“ und wird nicht angefasst –
-     * dann darf ein Ticketpreis durchkommen.
+     * dann darf ein Ticketpreis durchkommen. Steht neben einer Null ein echter
+     * Betrag, bleibt die Angabe ebenfalls stehen; dieser Fall gehört bereinigt,
+     * nicht versteckt (siehe redundant_zero_cost_ids()).
      *
-     * @param mixed $raw
+     * @param mixed $raw Einzelwert oder Array aller Meta-Werte
      */
     public static function meta_reads_as_free( $raw ) {
-        if ( is_array( $raw ) ) { $raw = reset( $raw ); }
-        $raw = trim( (string) $raw );
-        if ( $raw === '' ) { return false; }
+        $values = is_array( $raw ) ? $raw : [ $raw ];
+        $seen   = false;
 
-        $raw = str_replace( ',', '.', $raw );
-        if ( ! is_numeric( $raw ) ) { return false; }
+        foreach ( $values as $value ) {
+            $value = trim( (string) $value );
+            if ( $value === '' ) { continue; }
 
-        return number_format( (float) $raw, 2, '.', ',' ) === '0.00';
+            $seen  = true;
+            $value = str_replace( ',', '.', $value );
+            if ( ! is_numeric( $value ) ) { return false; }
+            if ( number_format( (float) $value, 2, '.', ',' ) !== '0.00' ) { return false; }
+        }
+
+        return $seen;
+    }
+
+    /**
+     * Veranstaltungen, bei denen neben einem echten Betrag zusätzlich eine Null
+     * im Preisfeld steht.
+     *
+     * TEC bildet daraus eine Spanne und zeigt „Kostenlos – 15,00 €“. Die Null
+     * ist in diesem Fall ein Datenrest, kein Preis – wegräumen statt verstecken.
+     *
+     * @return int[]
+     */
+    public static function redundant_zero_cost_ids() {
+        global $wpdb;
+
+        $sql = "SELECT DISTINCT z.post_id
+                  FROM {$wpdb->postmeta} z
+                  INNER JOIN {$wpdb->postmeta} v
+                          ON v.post_id = z.post_id AND v.meta_key = '_EventCost'
+                  INNER JOIN {$wpdb->posts} p ON p.ID = z.post_id
+                 WHERE z.meta_key = '_EventCost'
+                   AND p.post_type = 'tribe_events'
+                   AND TRIM( z.meta_value ) REGEXP '^0([.,]0+)?$'
+                   AND TRIM( v.meta_value ) <> ''
+                   AND TRIM( v.meta_value ) NOT REGEXP '^0([.,]0+)?$'";
+
+        return array_map( 'intval', (array) $wpdb->get_col( $sql ) );
+    }
+
+    /**
+     * Entfernt bei diesen Veranstaltungen die überzähligen Null-Zeilen.
+     *
+     * @return int Anzahl der bereinigten Veranstaltungen
+     */
+    public static function clean_redundant_zero_costs() {
+        $done = 0;
+        foreach ( self::redundant_zero_cost_ids() as $post_id ) {
+            foreach ( (array) get_post_meta( $post_id, '_EventCost', false ) as $value ) {
+                if ( self::meta_reads_as_free( $value ) ) {
+                    delete_post_meta( $post_id, '_EventCost', $value );
+                }
+            }
+            clean_post_cache( $post_id );
+            $done++;
+        }
+        return $done;
     }
 
     /**

@@ -9,6 +9,7 @@ class Admin {
         add_action('admin_menu', [__CLASS__, 'menu']);
         add_action('admin_init', [__CLASS__, 'register_settings']);
         add_action('admin_post_tec_addons_clear_last_mail_error', [__CLASS__, 'clear_last_mail_error']);
+        add_action('admin_post_tec_addons_clean_zero_costs', [__CLASS__, 'clean_zero_costs']);
         add_action('admin_notices', [__CLASS__, 'maybe_show_cron_notice']);
 
         // Abonnenten-Aktionen
@@ -292,9 +293,29 @@ class Admin {
     }
 
     /* -------------------- ANZEIGE -------------------- */
+    public static function clean_zero_costs() {
+        if ( ! current_user_can('manage_options') ) { wp_die('Insufficient permissions'); }
+        check_admin_referer('tec_addons_clean_zero_costs');
+
+        $done = \TEC_Addons\Cost_Display::clean_redundant_zero_costs();
+
+        wp_safe_redirect(add_query_arg(
+            ['tec-addons-zero-costs' => (int) $done],
+            admin_url('admin.php?page=tec-add-ons-display')
+        ));
+        exit;
+    }
+
     public static function render_display() {
         if ( ! current_user_can('manage_options') ) { return; }
         echo '<div class="wrap"><h1>Anzeige</h1>';
+
+        if ( isset($_GET['tec-addons-zero-costs']) ) {
+            printf(
+                '<div class="notice notice-success is-dismissible"><p><strong>Preisfelder bereinigt.</strong> Betroffene Veranstaltungen: %d</p></div>',
+                (int) $_GET['tec-addons-zero-costs']
+            );
+        }
         echo '<form method="post" action="options.php">';
         settings_fields('tec_addons_display');
 
@@ -370,6 +391,18 @@ class Admin {
         }
         echo '</tbody></table>';
         echo '<p class="description">Steht rechts noch „Kostenlos“, obwohl links eine Null steht, greift der Filter nicht – dann bitte melden.</p>';
+
+        // Doppelte Preisfelder: echter Betrag + zusätzliche Null
+        $mixed = \TEC_Addons\Cost_Display::redundant_zero_cost_ids();
+        if ( $mixed ) {
+            $url = wp_nonce_url(admin_url('admin-post.php?action=tec_addons_clean_zero_costs'), 'tec_addons_clean_zero_costs');
+            echo '<h3>Doppelte Preisangaben</h3>';
+            printf(
+                '<p>%d Veranstaltung(en) haben neben einem echten Betrag zusätzlich eine Null im Preisfeld. The Events Calendar macht daraus eine Spanne und zeigt etwas wie „Kostenlos – 15,00 €“.</p>',
+                count($mixed)
+            );
+            echo '<p><a class="button" href="'.esc_url($url).'" onclick="return confirm(\'Die überzähligen Null-Einträge entfernen? Die echten Beträge bleiben stehen.\')">Überzählige Nullen entfernen ('.count($mixed).')</a></p>';
+        }
     }
 
     /* -------------------- ABONNENTEN -------------------- */
