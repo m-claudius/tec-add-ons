@@ -30,6 +30,7 @@ class Admin {
         add_submenu_page('tec-add-ons', __('Mailing','tec-add-ons'), __('Mailing','tec-add-ons'), 'manage_options', 'tec-add-ons-mailing', [__CLASS__, 'render_mailing']);
         add_submenu_page('tec-add-ons', __('Filterleiste','tec-add-ons'), __('Filterleiste','tec-add-ons'), 'manage_options', 'tec-add-ons-filter', [__CLASS__, 'render_filter']);
         add_submenu_page('tec-add-ons', __('Featured / Sortierung','tec-add-ons'), __('Featured / Sortierung','tec-add-ons'), 'manage_options', 'tec-add-ons-featured', [__CLASS__, 'render_featured']);
+        add_submenu_page('tec-add-ons', __('Anzeige','tec-add-ons'), __('Anzeige','tec-add-ons'), 'manage_options', 'tec-add-ons-display', [__CLASS__, 'render_display']);
         add_submenu_page('tec-add-ons', __('Abonnenten','tec-add-ons'), __('Abonnenten','tec-add-ons'), 'manage_options', 'tec-add-ons-subscribers', [__CLASS__, 'render_subscribers']);
         add_submenu_page('tec-add-ons', __('Statistik','tec-add-ons'), __('Statistik','tec-add-ons'), 'manage_options', 'tec-add-ons-stats', [__CLASS__, 'render_stats']);
     }
@@ -67,6 +68,9 @@ class Admin {
 
         // FEATURED FIRST
         register_setting('tec_addons_featured', 'tec_addons_enable_featured_first');
+
+        // ANZEIGE
+        register_setting('tec_addons_display', 'tec_addons_hide_zero_cost');
 
         // SUBSCRIBE (Anmeldung)
         register_setting('tec_addons_subscribe', 'tec_addons_confirm_url');
@@ -279,6 +283,26 @@ class Admin {
         echo '<tr><th scope="row">Featured zuerst</th><td>';
         echo '<label><input type="checkbox" name="tec_addons_enable_featured_first" value="yes" '.checked($on,true,false).'> „Hervorgehobene Veranstaltungen“ immer zuerst listen</label>';
         echo '<p class="description">Wir werten das TEC-Flag und gängige Meta-Keys wie <code>_tribe_is_featured</code> aus.</p>';
+        echo '</td></tr>';
+        echo '</table>';
+
+        submit_button(__('Einstellungen speichern','tec-add-ons'));
+        echo '</form>';
+        echo '</div>';
+    }
+
+    /* -------------------- ANZEIGE -------------------- */
+    public static function render_display() {
+        if ( ! current_user_can('manage_options') ) { return; }
+        echo '<div class="wrap"><h1>Anzeige</h1>';
+        echo '<form method="post" action="options.php">';
+        settings_fields('tec_addons_display');
+
+        $on = get_option('tec_addons_hide_zero_cost','yes')==='yes';
+        echo '<table class="form-table" role="presentation">';
+        echo '<tr><th scope="row">Preisangabe</th><td>';
+        echo '<label><input type="checkbox" name="tec_addons_hide_zero_cost" value="yes" '.checked($on,true,false).'> „Kostenlos“ nicht anzeigen</label>';
+        echo '<p class="description">The Events Calendar schreibt „Kostenlos“ in den Kopf der Veranstaltungsseite, sobald der Preis auf null hinausläuft – auch bei Reservierungen ohne Preis. Echte Beträge bleiben in jedem Fall stehen.</p>';
         echo '</td></tr>';
         echo '</table>';
 

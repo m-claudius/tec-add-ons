@@ -2,8 +2,8 @@
 /**
  * Plugin Name: TEC add ons
  * Plugin URI:  https://github.com/m-claudius/tec-add-ons
- * Description: Zusätze für The Events Calendar: Filterleiste, „Hervorgehobene Veranstaltung“ zuerst, Newsletter (Cron/Test/Logs), Community-Events (Frontend-Einreichung, Moderation, Nutzer ↔ Quelle).
- * Version: 1.6.3
+ * Description: Zusätze für The Events Calendar: Filterleiste, „Hervorgehobene Veranstaltung“ zuerst, Anzeige der Preisangabe, Newsletter (Cron/Test/Logs), Community-Events (Frontend-Einreichung, Moderation, Nutzer ↔ Quelle).
+ * Version: 1.7.0
  * Author: Matthias Clausen
  * Author URI: https://github.com/m-claudius
  * Requires at least: 6.1
@@ -16,7 +16,7 @@
  */
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-define( 'TEC_ADDONS_VERSION', '1.6.3' );
+define( 'TEC_ADDONS_VERSION', '1.7.0' );
 define( 'TEC_ADDONS_DIR', plugin_dir_path( __FILE__ ) );
 define( 'TEC_ADDONS_URL', plugin_dir_url( __FILE__ ) );
 
@@ -35,6 +35,7 @@ require_once TEC_ADDONS_DIR . 'includes/community/class-form.php';
 require_once TEC_ADDONS_DIR . 'includes/class-admin.php';
 require_once TEC_ADDONS_DIR . 'includes/class-featured-first.php';
 require_once TEC_ADDONS_DIR . 'includes/class-filter-bar.php';
+require_once TEC_ADDONS_DIR . 'includes/class-cost-display.php';
 require_once TEC_ADDONS_DIR . 'includes/class-mailing.php';
 require_once TEC_ADDONS_DIR . 'includes/class-subscribe.php';
 require_once TEC_ADDONS_DIR . 'includes/class-stats.php';
@@ -55,6 +56,7 @@ add_action( 'plugins_loaded', function() {
 	\TEC_Addons\Admin::init();
 	\TEC_Addons\Featured_First::init();
 	\TEC_Addons\Filter_Bar::init();
+	\TEC_Addons\Cost_Display::init();
 	\TEC_Addons\Mailing::init();
 	\TEC_Addons\Subscribe::init();
 	\TEC_Addons\Stats::init();

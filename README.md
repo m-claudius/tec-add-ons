@@ -4,7 +4,7 @@ WordPress-Plugin als Erweiterung für **The Events Calendar (TEC)**.
 
 Bündelt mehrere Zusatzmodule rund um Veranstaltungslisten, Newsletter und Community-Einreichungen.
 
-- **Version:** 1.6.3
+- **Version:** 1.7.0
 - **Autor:** Matthias Clausen (mit ChatGPT)
 - **Lizenz:** GPLv2 or later
 - **Voraussetzungen:** WordPress 6.1+, PHP 7.4+ (laut Header) / PHP 8+ (laut Handbuch), aktives *The Events Calendar*, funktionierender `wp_mail()`-Versand
@@ -22,6 +22,26 @@ Linke Sidebar mit Kategorie-Checkboxen für TEC-Listenansichten.
 
 ### Featured zuerst (`class-featured-first.php`)
 Hebt TEC-„Hervorgehobene Veranstaltungen" in Listenansichten ganz nach oben.
+
+### Preisangabe (`class-cost-display.php`)
+Unterdrückt „Kostenlos“ im Kopf der Veranstaltungsseite.
+
+The Events Calendar setzt das Wort, sobald der Preis numerisch ist und sich zu
+`0.00` formatiert (`Tribe__Cost_Utils::maybe_replace_cost_with_free()`); ein
+leeres Preisfeld erzeugt gar keine Ausgabe
+(`Tribe__Events__Cost_Utils::get_event_costs()` filtert leere Werte heraus).
+Die Null kann von Hand kommen, beim Anlegen über die TEC-ORM entstehen oder von
+Event Tickets stammen, das bei Reservierungen ohne Preis eine 0 hinterlegt.
+
+Der Filter hängt sich in `tribe_get_cost` ein – den letzten Filter vor der
+Ausgabe, den `tribe_get_formatted_cost()` intern mitbenutzt – und liefert eine
+leere Zeichenkette, sobald der Wert auf null hinausläuft. Echte Beträge und
+Spannen bleiben stehen. Verglichen wird gegen `esc_html__( 'Free', 'tribe-common' )`
+statt gegen ein fest verdrahtetes „Kostenlos“, damit eine geänderte Übersetzung
+nichts aushebelt.
+
+Abschaltbar unter *TEC add ons → Anzeige*, einzelne Veranstaltungen über den
+Filter `tec_addons_hide_zero_cost`.
 
 ### Mailing / Newsletter (`class-mailing.php`)
 - Shortcode `[tec_addons_subscribe]` als Abo-Formular (E-Mail, Quellen, Häufigkeit)
@@ -90,6 +110,7 @@ includes/
   class-admin.php            Admin-Menüs/Settings
   class-filter-bar.php       Filterleiste links
   class-featured-first.php   Hervorgehobene zuerst
+  class-cost-display.php     Anzeige "Kostenlos" unterdrücken
   class-mailing.php          Newsletter (Cron, Log, Test)
   class-subscribe.php        Abonnentenverwaltung + Double-Opt-In
   class-stats.php            Statistik
@@ -97,6 +118,8 @@ includes/
 assets/
   css/filter.css
   js/filter.js
+tests/
+  test-cost-display.php      Logiktest ohne WordPress
 ```
 
 ## Dokumentation
